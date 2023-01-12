@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/endereco")
 public class EnderecoController {
 
-    @Autowired
-    EnderecoService enderecoService;
 
+    EnderecoService enderecoService;
+    @Autowired
+    public EnderecoController(EnderecoService enderecoService) {
+        this.enderecoService = enderecoService;
+    }
     /*
      * Retorna a endereco pelo id informado
      * */
@@ -40,14 +43,14 @@ public class EnderecoController {
      * Atualiza a endereco informada
      * */
     @PutMapping
-    public ResponseEntity<Object> updateEndereco(Endereco endereco){
+    public ResponseEntity<Object> updateEndereco(@RequestBody Endereco endereco){
         return enderecoService.updateEndereco(endereco);
     }
     /*
      * Cria a endereco informada
      * */
     @PostMapping
-    public ResponseEntity<Object> createEndereco(Endereco endereco){
+    public ResponseEntity<Object> createEndereco(@RequestBody Endereco endereco){
         return enderecoService.createEndereco(endereco);
     }
     /*

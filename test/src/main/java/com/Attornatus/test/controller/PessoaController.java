@@ -1,6 +1,7 @@
 package com.attornatus.test.controller;
 
 import com.attornatus.test.entity.Pessoa;
+import com.attornatus.test.service.EnderecoService;
 import com.attornatus.test.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -10,15 +11,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/pessoa")
 public class PessoaController {
-    @Autowired
-    PessoaService pessoaService;
 
+    PessoaService pessoaService;
+    @Autowired
+    public PessoaController(PessoaService pessoaService) {
+        this.pessoaService = pessoaService;
+    }
     /*
     * Retorna a pessoa pelo id informado
     * */
-    @GetMapping("/aaa/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> getPessoaById(@PathVariable Long id){
-    return pessoaService.getPessoaById(id);
+        return pessoaService.getPessoaById(id);
     }
     /*
      * Retorna a lista de pessoas cadastradas
@@ -32,21 +36,22 @@ public class PessoaController {
      * Atualiza a pessoa informada
      * */
     @PutMapping
-    public ResponseEntity<Object> updatePessoa(Pessoa pessoa){
+    public ResponseEntity<Object> updatePessoa(@RequestBody Pessoa pessoa){
+        System.out.println("@@@@updatePessoa "+pessoa);
         return pessoaService.updatePessoa(pessoa);
     }
     /*
      * Cria a pessoa informada
      * */
     @PostMapping
-    public ResponseEntity<Object> createPessoa(Pessoa pessoa){
+    public ResponseEntity<Object> createPessoa(@RequestBody Pessoa pessoa){
         return pessoaService.createPessoa(pessoa);
     }
     /*
      * remove a pessoa informada pelo id
      * */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> createPessoa(@PathVariable Long id){
+    public ResponseEntity<Object> removePessoa(@PathVariable Long id){
         return pessoaService.removePessoa(id);
     }
 }

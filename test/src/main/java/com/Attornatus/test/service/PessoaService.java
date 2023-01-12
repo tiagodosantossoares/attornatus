@@ -25,6 +25,7 @@ public class PessoaService {
     EnderecoRepository enderecoRepository;
 
     public ResponseEntity<Object> getPessoaById(Long id) {
+        System.out.println("getPessoaById Service : "+id+" "+pessoaRepository);
         Optional<Pessoa> result=pessoaRepository.findById(id);
         if(result.isPresent()) {
             return new ResponseEntity<Object>(result, HttpStatus.OK);
@@ -34,6 +35,7 @@ public class PessoaService {
     }
 
     public ResponseEntity<Object> getPessoas(Pageable pageable) {
+        System.out.println("getPessoaById getPessoas : "+pessoaRepository);
         Page<Pessoa> result=pessoaRepository.findAll(pageable);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -55,14 +57,14 @@ public class PessoaService {
         if(!usuarioSalvo.isPresent() && !usuarioSalvoByName.isPresent()) {
             pessoa.setId(pessoa.getId());
             pessoaRepository.save(pessoa);
-            return new ResponseEntity<Object>(pessoa, HttpStatus.OK);
+            return new ResponseEntity<Object>(pessoa, HttpStatus.CREATED);
         }else{
             return  new ResponseEntity<Object>("Pessoa com o mesmo nome ja cadastrada.", HttpStatus.BAD_REQUEST);
         }
     }
-
+    @Transactional
     public ResponseEntity<Object> removePessoa(Long id) {
-        try {
+            System.out.println("@@@removePessoa "+id+" "+pessoaRepository+" "+enderecoRepository);
             Optional<Pessoa> usuarioSalvo = pessoaRepository.findById(id);
             if (usuarioSalvo.isPresent()) {
                 List<Endereco> enderecos = usuarioSalvo.get().getEnderecos();
@@ -70,9 +72,6 @@ public class PessoaService {
                 pessoaRepository.delete(usuarioSalvo.get());
             }
             return new ResponseEntity<Object>(HttpStatus.OK);
-        }catch (Exception e){
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return new ResponseEntity<Object>(HttpStatus.BAD_GATEWAY);
-        }
+
     }
 }

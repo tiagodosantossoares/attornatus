@@ -7,6 +7,14 @@ import java.util.List;
 @Entity
 @Table(name="pessoa")
 public class Pessoa {
+    public Pessoa(){}
+    public Pessoa(Long id, String nome, Date dataNascimento, List<Endereco> enderecos) {
+        this.id = id;
+        this.nome = nome;
+        this.dataNascimento = dataNascimento;
+        this.enderecos = enderecos;
+    }
+
     @Id
     @SequenceGenerator(name="seq_pessoa",sequenceName = "seq_pessoa",allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.AUTO,generator = "seq_pessoa")

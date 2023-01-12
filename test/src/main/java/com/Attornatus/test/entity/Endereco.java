@@ -10,6 +10,17 @@ import javax.persistence.*;
 @Table(name="endereco")
 
 public class Endereco{
+    public Endereco(){}
+    public Endereco(Long id, String logradouro, String cep, Integer numero, String cidade, Boolean enderecoPrincipal, Pessoa pessoa) {
+        Id = id;
+        this.logradouro = logradouro;
+        this.cep = cep;
+        this.numero = numero;
+        this.cidade = cidade;
+        this.enderecoPrincipal = enderecoPrincipal;
+        this.pessoa = pessoa;
+    }
+
     @Id
     @SequenceGenerator(name="seq_endereco",sequenceName = "seq_endereco",allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.AUTO,generator = "seq_endereco")
@@ -23,6 +34,8 @@ public class Endereco{
     private Integer numero;
     @Column(name = "cidade",nullable = false)
     private String cidade;
+    @Column(name = "endereco_principal",nullable = false)
+    private Boolean enderecoPrincipal;
     @ManyToOne(fetch = FetchType.LAZY)
     @LazyToOne(LazyToOneOption.PROXY)
     private Pessoa pessoa;
@@ -73,5 +86,13 @@ public class Endereco{
 
     public void setPessoa(Pessoa pessoa) {
         this.pessoa = pessoa;
+    }
+
+    public Boolean getEnderecoPrincipal() {
+        return enderecoPrincipal;
+    }
+
+    public void setEnderecoPrincipal(Boolean enderecoPrincipal) {
+        this.enderecoPrincipal = enderecoPrincipal;
     }
 }
