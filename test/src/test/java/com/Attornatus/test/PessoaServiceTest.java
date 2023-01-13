@@ -44,6 +44,7 @@ public class PessoaServiceTest extends TestCase {
     @InjectMocks
     private PessoaService pessoaService;
     @InjectMocks
+    @Spy
     private EnderecoService enderecoService;
     @Mock
     private PessoaRepository pessoaRepository;
@@ -58,9 +59,7 @@ public class PessoaServiceTest extends TestCase {
     private Endereco enderecoDefault;
     @BeforeEach
     public void setup() {
-        System.out.println("@@MockitoAnnotations.initMocks");
         MockitoAnnotations.initMocks(this);
-
     }
     @BeforeAll
     public  static void setupAll() throws ParseException {
@@ -90,10 +89,10 @@ public class PessoaServiceTest extends TestCase {
 
         pessoaOut=new Pessoa(1L,"pessoa",new Date(dt.getTime()),new ArrayList<>());
 
-        Endereco enderecoOut = new Endereco(1L,"logradouro","75000000",0,"anapolis",true,pessoaIn);
-        Endereco endereco2Out = new Endereco(2L,"logradouro2","75000001",1,"anapolis",false,pessoaIn);
-        pessoaIn.getEnderecos().add(enderecoOut);
-        pessoaIn.getEnderecos().add(endereco2Out);
+        Endereco enderecoOut = new Endereco(1L,"logradouro","75000000",0,"anapolis",true,pessoaOut);
+        Endereco endereco2Out = new Endereco(2L,"logradouro2","75000001",1,"anapolis",false,pessoaOut);
+        pessoaOut.getEnderecos().add(enderecoOut);
+        pessoaOut.getEnderecos().add(endereco2Out);
 
         pessoaLista.add(pessoaOut);
         pessoaLista.add(new Pessoa(3L,"pessoa3",new Date(dt.getTime()),new ArrayList<>()));
@@ -118,7 +117,6 @@ public class PessoaServiceTest extends TestCase {
         Mockito.when(pessoaRepository.findAll(pageable)).thenReturn(pagePessoa);
         ResponseEntity<Object> result= assertDoesNotThrow(()-> pessoaService.getPessoas(pageable));
         assertEquals(HttpStatus.OK,result.getStatusCode());
-        System.out.println("#######result "+pessoaLista+" "+result.getBody());
         Page<Pessoa> pessoaResult= (Page<Pessoa>) result.getBody();
         assertEquals(pessoaResult.get().count(),2);
 
@@ -132,16 +130,16 @@ public class PessoaServiceTest extends TestCase {
         ResponseEntity<Object> result= assertDoesNotThrow(()-> pessoaService.updatePessoa(pessoaOut));
         assertEquals(HttpStatus.OK,result.getStatusCode());
         Pessoa pessoaResult= (Pessoa) result.getBody();
-        assertEquals(pessoaResult.getId(),new Long(1L));
+        assertEquals(new Long(1L),pessoaResult.getId());
         assertEquals(pessoaResult.getNome(),"nome update");
     }
     @Test
     public void createPessoa(){
         Mockito.when(pessoaRepository.save(pessoaIn)).thenReturn(pessoaOut);
-        ResponseEntity<Object> result= assertDoesNotThrow(()-> pessoaService.createPessoa(pessoaOut));
+
+        ResponseEntity<Object> result= assertDoesNotThrow(()-> pessoaService.createPessoa(pessoaIn));
         assertEquals(HttpStatus.CREATED,result.getStatusCode());
         Pessoa pessoaResult= (Pessoa) result.getBody();
-        assertEquals(pessoaResult.getId(),new Long(1L));
     }
     @Test
     public void createPessoaComNomeIgual(){

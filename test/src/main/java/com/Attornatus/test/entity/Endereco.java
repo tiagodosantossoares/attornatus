@@ -1,18 +1,21 @@
 package com.attornatus.test.entity;
 
+import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.LazyToOne;
 import org.hibernate.annotations.LazyToOneOption;
 import org.springframework.context.annotation.Lazy;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name="endereco")
-
-public class Endereco{
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "endereco_id",scope = Endereco.class)
+public class Endereco implements Serializable {
     public Endereco(){}
     public Endereco(Long id, String logradouro, String cep, Integer numero, String cidade, Boolean enderecoPrincipal, Pessoa pessoa) {
-        Id = id;
+        this.id = id;
         this.logradouro = logradouro;
         this.cep = cep;
         this.numero = numero;
@@ -24,7 +27,8 @@ public class Endereco{
     @Id
     @SequenceGenerator(name="seq_endereco",sequenceName = "seq_endereco",allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.AUTO,generator = "seq_endereco")
-    private Long Id;
+    @JsonProperty("endereco_id")
+    private Long id;
     @Column(name = "logradouro",nullable = false)
     private String logradouro;
     @Column(name = "cep",nullable = false)
@@ -38,17 +42,21 @@ public class Endereco{
     private Boolean enderecoPrincipal;
     @ManyToOne(fetch = FetchType.LAZY)
     @LazyToOne(LazyToOneOption.PROXY)
+    @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty("pessoa_id")
     private Pessoa pessoa;
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+
+        this.id = id;
     }
 
     public String getLogradouro() {
+
         return logradouro;
     }
 
@@ -94,5 +102,18 @@ public class Endereco{
 
     public void setEnderecoPrincipal(Boolean enderecoPrincipal) {
         this.enderecoPrincipal = enderecoPrincipal;
+    }
+
+    @Override
+    public String toString() {
+        return "Endereco{" +
+                "Id=" + id +
+                ", logradouro='" + logradouro + '\'' +
+                ", cep='" + cep + '\'' +
+                ", numero=" + numero +
+                ", cidade='" + cidade + '\'' +
+                ", enderecoPrincipal=" + enderecoPrincipal +
+                ", pessoa=" + pessoa +
+                '}';
     }
 }

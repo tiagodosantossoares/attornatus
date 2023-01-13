@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,9 +24,9 @@ public class PessoaService {
     PessoaRepository pessoaRepository;
     @Autowired
     EnderecoRepository enderecoRepository;
-
+    @Autowired
+    EnderecoService enderecoService;
     public ResponseEntity<Object> getPessoaById(Long id) {
-        System.out.println("getPessoaById Service : "+id+" "+pessoaRepository);
         Optional<Pessoa> result=pessoaRepository.findById(id);
         if(result.isPresent()) {
             return new ResponseEntity<Object>(result, HttpStatus.OK);
@@ -33,38 +34,117 @@ public class PessoaService {
             return  new ResponseEntity<Object>( HttpStatus.NOT_FOUND);
         }
     }
-
     public ResponseEntity<Object> getPessoas(Pageable pageable) {
-        System.out.println("getPessoaById getPessoas : "+pessoaRepository);
         Page<Pessoa> result=pessoaRepository.findAll(pageable);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    public Pessoa getPessoaComTodosEnderecos(Pessoa pessoaSalva,Pessoa novaPessoa){
+        Endereco aux=null;
+        List<Endereco> enderecosPessoaSalva=pessoaSalva.getEnderecos();
+        List<Endereco> enderecosNovaPessoa=novaPessoa.getEnderecos();
+
+        for( Endereco endereco :enderecosPessoaSalva){
+            boolean achou=false;
+            for( Endereco item :enderecosNovaPessoa){
+                if(item.getId()!=null&&endereco.getId()!=null &&item.getId()==endereco.getId()) {
+                    achou=true;
+                    break;
+                }
+            }
+            if(!achou){
+                enderecosNovaPessoa.add(endereco);
+            }
+        }
+        for(Endereco e : enderecosNovaPessoa){
+            if(e.getEnderecoPrincipal() && aux!=null){
+                aux.setEnderecoPrincipal(false);
+                aux=e;
+            }else{
+                aux=e;
+            }
+        }
+
+        pessoaSalva.setEnderecos(enderecosNovaPessoa);
+        return pessoaSalva;
+    }
+    @Transactional
     public ResponseEntity<Object> updatePessoa(Pessoa pessoa) {
-        Optional<Pessoa> usuarioSalvo=pessoaRepository.findById(pessoa.getId());
-        if(usuarioSalvo.isPresent()) {
-            pessoa.setId(pessoa.getId());
+        Optional<Pessoa> pessoaSalva=pessoaRepository.findById(pessoa.getId());
+        Date now=new Date();
+        if(now.before(pessoa.getDataNascimento())){
+            return  new ResponseEntity<Object>("{\"error\":\"Data de nascimento Invalida.\"}", HttpStatus.BAD_REQUEST);
+        }
+        if(!pessoaSalva.isPresent()){
+            return  new ResponseEntity<Object>("{\"error\":\"Id não Localizado.\"}", HttpStatus.NOT_FOUND);
+        }
+        ResponseEntity<Object> resultVerificacao=enderecoService.verificaEnderecoPessoa(getPessoaComTodosEnderecos(pessoaSalva.get(),pessoa));
+        if(resultVerificacao!=null){
+            return resultVerificacao;
+        }
+        if(pessoaSalva.isPresent()) {
+            pessoa.setId(pessoaSalva.get().getId());
             pessoaRepository.save(pessoa);
+            Long idEnderecoDefault=0L;
+            if(pessoa.getEnderecos()!=null) {
+                for(Endereco item :pessoa.getEnderecos()){
+                    item.setPessoa(pessoa);
+                   enderecoRepository.save(item);
+                   if(item.getEnderecoPrincipal()==true){
+                       idEnderecoDefault=item.getId();
+                   }
+                }
+            }
+            List<Endereco> enderecos=enderecoRepository.findEnderecoByPessoaId(pessoa.getId());
+            for(Endereco endereco : enderecos){
+                if(idEnderecoDefault!=0L && idEnderecoDefault!=endereco.getId() && endereco.getEnderecoPrincipal()==true){
+                    endereco.setEnderecoPrincipal(false);
+                    enderecoRepository.save(endereco);
+                }
+            }
+            pessoa.setEnderecos(enderecos);
             return new ResponseEntity<Object>(pessoa, HttpStatus.OK);
         }else{
             return  new ResponseEntity<Object>( HttpStatus.NOT_FOUND);
         }
     }
-
+    @Transactional
     public ResponseEntity<Object> createPessoa(Pessoa pessoa) {
-        Optional<Pessoa> usuarioSalvo=pessoaRepository.findById(pessoa.getId());
+        pessoa.setId(null);
         Optional<Pessoa> usuarioSalvoByName=pessoaRepository.findByNome(pessoa.getNome());
-        if(!usuarioSalvo.isPresent() && !usuarioSalvoByName.isPresent()) {
+
+        Date now=new Date();
+        if(now.before(pessoa.getDataNascimento())){
+            return  new ResponseEntity<Object>("{\"error\":\"Data de nascimento Invalida.\"}", HttpStatus.BAD_REQUEST);
+        }
+        int qntEnderecoDefault=0;
+        if(pessoa.getEnderecos()!=null) {
+            for(Endereco item :pessoa.getEnderecos()){
+                if(item.getEnderecoPrincipal()==true) {
+                    qntEnderecoDefault++;
+                }
+            }
+        }
+        if(qntEnderecoDefault>1){
+            return  new ResponseEntity<Object>("{\"error\":\"Foi informado mais de 1 endereço como padrão.\"}", HttpStatus.BAD_REQUEST);
+        }
+        if( !usuarioSalvoByName.isPresent()) {
             pessoa.setId(pessoa.getId());
             pessoaRepository.save(pessoa);
+            if(pessoa.getEnderecos()!=null) {
+                pessoa.getEnderecos().forEach(item -> {
+                    item.setPessoa(pessoa);
+                    enderecoRepository.save(item);
+
+                });
+            }
             return new ResponseEntity<Object>(pessoa, HttpStatus.CREATED);
         }else{
-            return  new ResponseEntity<Object>("Pessoa com o mesmo nome ja cadastrada.", HttpStatus.BAD_REQUEST);
+            return  new ResponseEntity<Object>("{\"error\":\"Pessoa com o mesmo nome já cadastrada.\"}", HttpStatus.BAD_REQUEST);
         }
     }
     @Transactional
     public ResponseEntity<Object> removePessoa(Long id) {
-            System.out.println("@@@removePessoa "+id+" "+pessoaRepository+" "+enderecoRepository);
             Optional<Pessoa> usuarioSalvo = pessoaRepository.findById(id);
             if (usuarioSalvo.isPresent()) {
                 List<Endereco> enderecos = usuarioSalvo.get().getEnderecos();
@@ -74,4 +154,5 @@ public class PessoaService {
             return new ResponseEntity<Object>(HttpStatus.OK);
 
     }
+
 }

@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/endereco")
+@RequestMapping(value = "/api/endereco", produces="application/json")
+
 public class EnderecoController {
 
 
@@ -49,9 +50,9 @@ public class EnderecoController {
     /*
      * Cria a endereco informada
      * */
-    @PostMapping
-    public ResponseEntity<Object> createEndereco(@RequestBody Endereco endereco){
-        return enderecoService.createEndereco(endereco);
+    @PostMapping("/pessoa/{id}")
+    public ResponseEntity<Object> createEndereco(@PathVariable(value = "id") Long idPessoa,@RequestBody Endereco endereco){
+        return enderecoService.createEndereco(idPessoa,endereco);
     }
     /*
      * remove a endereco informada pelo id

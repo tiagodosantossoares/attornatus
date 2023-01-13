@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/pessoa")
+@RequestMapping(value = "/api/pessoa", produces="application/json")
 public class PessoaController {
 
     PessoaService pessoaService;
@@ -37,7 +37,6 @@ public class PessoaController {
      * */
     @PutMapping
     public ResponseEntity<Object> updatePessoa(@RequestBody Pessoa pessoa){
-        System.out.println("@@@@updatePessoa "+pessoa);
         return pessoaService.updatePessoa(pessoa);
     }
     /*

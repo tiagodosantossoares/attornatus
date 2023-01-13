@@ -8,12 +8,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface EnderecoRepository extends JpaRepository<Endereco,Long> {
-    List<Endereco> findEnderecoByPessoaIdAndLogradouroAndCepAndNumeroAndCidade(Long id,String logradouro,String cep,Integer numero,String cidade);
+    List<Endereco> findByPessoaIdAndLogradouroAndCepAndNumeroAndCidade(Long id,String logradouro,String cep,Integer numero,String cidade);
 
 
     Page<Endereco> findAllByPessoaId(Long id, Pageable pageable);
 
     List<Endereco> findEnderecoByPessoaId(long l);
+
+    Optional<Endereco> findEnderecoByPessoaIdAndEnderecoPrincipalIsTrue(Long id);
+
+    List<Endereco> findByPessoaIdAndLogradouroAndCepAndNumeroAndCidadeAndIdNotLike(Long id, String logradouro, String cep, Integer numero, String cidade, Long id1);
 }
