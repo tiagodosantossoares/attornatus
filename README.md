@@ -33,5 +33,5 @@ Será levado em avaliação
 	•	Alcance dos objetivos propostos. -->
 
 Swagger:
-http://44.192.132.58:8080/swagger-ui.html
+http://attornatus-teste.ddns.net:8080/swagger-ui.html
 
