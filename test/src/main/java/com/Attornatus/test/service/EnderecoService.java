@@ -23,7 +23,7 @@ public class EnderecoService {
     EnderecoRepository enderecoRepository;
     @Autowired
     PessoaRepository pessoaRepository;
-    public ResponseEntity<Endereco> getEnderecoById(Long id) {
+    public ResponseEntity<Object> getEnderecoById(Long id) {
         Optional<Endereco> endereco=enderecoRepository.findById(id);
         if(endereco.isPresent()){
             return  new ResponseEntity<>(endereco.get(),HttpStatus.OK);
@@ -137,11 +137,11 @@ public class EnderecoService {
         updateEnderecoPrincipal(pessoa.get(),endereco);
         endereco.setPessoa(pessoa.get());
         Endereco enderecoSalvo=enderecoRepository.save(endereco);
-        return new ResponseEntity<Object>(enderecoSalvo, HttpStatus.OK);
+        return new ResponseEntity<Object>(enderecoSalvo, HttpStatus.CREATED);
 
     }
 
-    public ResponseEntity<Endereco> removeEndereco(Long id) {
+    public ResponseEntity<Object> removeEndereco(Long id) {
         enderecoRepository.deleteById(id);
         return  new ResponseEntity<>(HttpStatus.ACCEPTED);
     }

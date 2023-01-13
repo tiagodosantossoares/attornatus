@@ -23,7 +23,7 @@ public class EnderecoController {
      * Retorna a endereco pelo id informado
      * */
     @GetMapping("/{id}")
-    public ResponseEntity<Endereco> getEnderecoById(@PathVariable Long id){
+    public ResponseEntity<Object> getEnderecoById(@PathVariable Long id){
         return enderecoService.getEnderecoById(id);
     }
     /*
@@ -58,7 +58,7 @@ public class EnderecoController {
      * remove a endereco informada pelo id
      * */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Endereco> createEndereco(@PathVariable Long id){
+    public ResponseEntity<Object> createEndereco(@PathVariable Long id){
         return enderecoService.removeEndereco(id);
     }
 }

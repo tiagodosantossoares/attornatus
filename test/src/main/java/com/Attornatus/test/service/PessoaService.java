@@ -14,9 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PessoaService {
@@ -43,29 +42,16 @@ public class PessoaService {
         Endereco aux=null;
         List<Endereco> enderecosPessoaSalva=pessoaSalva.getEnderecos();
         List<Endereco> enderecosNovaPessoa=novaPessoa.getEnderecos();
-
-        for( Endereco endereco :enderecosPessoaSalva){
-            boolean achou=false;
-            for( Endereco item :enderecosNovaPessoa){
-                if(item.getId()!=null&&endereco.getId()!=null &&item.getId()==endereco.getId()) {
-                    achou=true;
-                    break;
-                }
-            }
-            if(!achou){
-                enderecosNovaPessoa.add(endereco);
-            }
-        }
-        for(Endereco e : enderecosNovaPessoa){
-            if(e.getEnderecoPrincipal() && aux!=null){
-                aux.setEnderecoPrincipal(false);
-                aux=e;
-            }else{
-                aux=e;
+        List<Endereco> setEndereco = new ArrayList<>();
+        setEndereco.addAll(enderecosNovaPessoa);
+        for(Endereco e:enderecosPessoaSalva){
+            if(setEndereco.stream().filter(item->item.getId()==e.getId()).map(item->item).findFirst().orElse(null)==null){
+                setEndereco.add(e);
             }
         }
 
-        pessoaSalva.setEnderecos(enderecosNovaPessoa);
+
+        pessoaSalva.setEnderecos(setEndereco.stream().collect(Collectors.toList()));
         return pessoaSalva;
     }
     @Transactional
@@ -151,7 +137,7 @@ public class PessoaService {
                 enderecoRepository.deleteAll(enderecos);
                 pessoaRepository.delete(usuarioSalvo.get());
             }
-            return new ResponseEntity<Object>(HttpStatus.OK);
+            return new ResponseEntity<Object>(HttpStatus.ACCEPTED);
 
     }
 

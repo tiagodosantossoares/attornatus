@@ -8,6 +8,7 @@ import com.attornatus.test.repository.PessoaRepository;
 import com.attornatus.test.service.EnderecoService;
 import com.attornatus.test.service.PessoaService;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +78,7 @@ public class PessoaServiceTest extends TestCase {
         endereco.setEnderecoPrincipal(true);
 
     }
+
     @BeforeEach
     public void setupBeforeEach () throws  ParseException{
         java.util.Date dt=new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2000");
@@ -96,6 +98,21 @@ public class PessoaServiceTest extends TestCase {
 
         pessoaLista.add(pessoaOut);
         pessoaLista.add(new Pessoa(3L,"pessoa3",new Date(dt.getTime()),new ArrayList<>()));
+    }
+    @Test
+    public  void  testGetPessoaComTodosEnderecos() throws Exception{
+        java.util.Date dt=new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2000");
+
+        Pessoa pessoa1=new Pessoa(1L,"pessoa",new Date(dt.getTime()),new ArrayList<>());
+        Pessoa pessoa2=new Pessoa(1L,"pessoa",new Date(dt.getTime()),new ArrayList<>());
+
+        pessoa1.getEnderecos().add(new Endereco(1L,"logradouro","75000000",0,"anapolis",true,pessoaOut));
+        pessoa2.getEnderecos().add(new Endereco(2L,"logradouro3","75000000",2,"anapolis",false,pessoaOut));
+        pessoa2.getEnderecos().add(new Endereco(null,"logradouro","75000000",0,"anapolis",true,pessoaOut));
+        pessoa1.getEnderecos().add(new Endereco(2L,"logradouro2","75000000",2,"anapolis",false,pessoaOut));
+
+        Pessoa pessoaResult=assertDoesNotThrow(()->pessoaService.getPessoaComTodosEnderecos(pessoa1,pessoa2));
+        Assert.assertEquals(3,pessoaResult.getEnderecos().size());
     }
     @Test
      public void getPessoaById(){
@@ -153,7 +170,7 @@ public class PessoaServiceTest extends TestCase {
     @Test
     public void removePessoaPessoa(){
         ResponseEntity<Object> result= assertDoesNotThrow(()-> pessoaService.removePessoa(1L));
-        assertEquals(HttpStatus.OK,result.getStatusCode());
+        assertEquals(HttpStatus.ACCEPTED,result.getStatusCode());
 
     }
 }
